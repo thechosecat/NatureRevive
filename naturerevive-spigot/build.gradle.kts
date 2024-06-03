@@ -22,6 +22,7 @@ repositories {
     maven("https://jitpack.io")
     maven("https://repo.glaremasters.me/repository/bloodshot")
     mavenCentral()
+    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
 }
 
 dependencies {
@@ -38,6 +39,9 @@ dependencies {
     compileOnly(files("libs/Residence5.1.3.0.jar"))
 
     implementation(project(":naturerevive-common"))
+    implementation(platform("com.intellectualsites.bom:bom-newest:1.44")) // Ref: https://github.com/IntellectualSites/bom
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core")
+    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit") { isTransitive = false }
 }
 
 tasks {
@@ -59,7 +63,7 @@ tasks {
 
     compileJava {
         options.encoding = Charsets.UTF_8.name()
-        options.release.set(11)
+        options.release.set(17)
     }
 
     javadoc {

@@ -106,6 +106,9 @@ public final class BukkitPositionInfo extends PositionInfo implements Configurat
     public void regenerateChunk() {
         ChunkRegeneration.regenerateChunk(this);
     }
+    public void regenerateChunk_FAWE() {
+        ChunkRegeneration.regenerateChunk_FAWE(this);
+    }
 
     @Override
     public String toString() {

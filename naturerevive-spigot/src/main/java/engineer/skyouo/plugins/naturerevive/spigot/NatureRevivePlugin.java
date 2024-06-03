@@ -23,6 +23,7 @@ import me.ryanhamshire.GriefPrevention.DataStore;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -60,8 +61,6 @@ public class NatureRevivePlugin extends JavaPlugin {
     public static final Queue<BlockStateWithPos> blockStateWithPosQueue = new Queue<>();
     public static final Queue<BlockDataChangeWithPos> blockDataChangeWithPos = new Queue<>();
     public static final Queue<SQLCommand> sqlCommandQueue = new Queue<>();
-    static boolean SpawningLock;
-    static Integer SpawnChunks;
 
     @Override
     public void onEnable() {
@@ -115,14 +114,17 @@ public class NatureRevivePlugin extends JavaPlugin {
         getServer().getScheduler().runTaskTimer(this, () -> {
             if (!readonlyConfig.regenerationStrategy.equalsIgnoreCase("passive") && !readonlyConfig.regenerationStrategy.equalsIgnoreCase("average")) {
                 List<BukkitPositionInfo> positionInfos = databaseConfig.values();
-                System.out.println("checking chunks");
+                int total = positionInfos.size();
+                int over = 0;
                 for (BukkitPositionInfo positionInfo : positionInfos) {
                     if (positionInfo.isOverTTL()) {
                         queue.add(positionInfo);
                         databaseConfig.unset(positionInfo);
-                        System.out.println(positionInfo + " isoverttl");
+                        over++;
                     }
                 }
+                Bukkit.getLogger().info("[NatureRevive] 共紀錄" + total +"個區塊");
+                Bukkit.getLogger().info("[NatureRevive] 共過期" + queue.size() +" (本次增加" + over +") 個區塊");
             }
 
             if (readonlyConfig.regenerationStrategy.equalsIgnoreCase("average")) {
@@ -164,7 +166,7 @@ public class NatureRevivePlugin extends JavaPlugin {
 //                        continue;
 //                    }
 
-                    task.regenerateChunk();
+                    task.regenerateChunk_FAWE();
 
                     if (readonlyConfig.debug)
                         NatureReviveBukkitLogger.debug("&7" + task + " was regenerated.");
@@ -247,6 +249,49 @@ public class NatureRevivePlugin extends JavaPlugin {
                 }
             }, readonlyConfig.dataSaveTime, readonlyConfig.dataSaveTime);
         }
+
+        //開啟自動永續一定數量之區塊
+
+//        int Enable_SpawningChunks = readonlyConfig.Enable_SpawningChunks;
+//        if (Enable_SpawningChunks <= 0){
+//            return;
+//        }
+//        Bukkit.getLogger().info("[NatureRevive] 開啟區塊預載系統....");
+//        List<BukkitPositionInfo> positionInfos = databaseConfig.values();
+//        int total = positionInfos.size();
+//        int over = 0;
+//        for (BukkitPositionInfo positionInfo : positionInfos) {
+//            if (positionInfo.isOverTTL()) {
+//                queue.add(positionInfo);
+//                databaseConfig.unset(positionInfo);
+//                over++;
+//            }
+//        }
+//        Bukkit.getLogger().info("[NatureRevive] 共紀錄" + total +"個區塊");
+//        Bukkit.getLogger().info("[NatureRevive] 共過期" + queue.size() +" (本次增加" + over +") 個區塊");
+//
+//        int c =0;
+//        for (int i =0; i< Enable_SpawningChunks ; i++){
+//            if (!queue.hasNext()){
+//                Bukkit.getLogger().info("[NatureRevive] 開啟區塊預載完成(標記量未滿筏值)");
+//                break;
+//            }
+//            BukkitPositionInfo task = queue.pop();
+//            if (readonlyConfig.ignoredWorld.contains(task.getLocation().getWorld().getName())) {
+//                Bukkit.getLogger().info("[NatureRevive] 區塊位置:" + task.getLocation() + "為排除世界 已跳過");
+//                continue;
+//            }
+//            if (BukkitPositionInfo.isGriefPrevention(task.getLocation()) && !readonlyConfig.griefPreventionStrictCheck) {
+//                Bukkit.getLogger().info("[NatureRevive] 區塊位置:" + task.getLocation() + "為領地內區塊 已跳過");
+//                continue;
+//            }
+//            c++;
+//            Bukkit.getLogger().info("[NatureRevive] 正在重生區塊: " + c + "/" + Enable_SpawningChunks);
+//            Bukkit.getLogger().info("[NatureRevive] 區塊位置:" + task.getLocation());
+//            task.regenerateChunk();
+//            Bukkit.getLogger().info("[NatureRevive] 區塊重生完成");
+//        }
+//        Bukkit.getLogger().info("[NatureRevive] 開啟區塊預載完成");
     }
 
     public static boolean checkSoftDependPlugins() {
@@ -323,12 +368,14 @@ public class NatureRevivePlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         // 關閉時將未來得及處理的旭六重新存入database
-        if (queue.size() <= 0){
-            return;
-        }
         while (queue.hasNext()){
             BukkitPositionInfo task = queue.pop();
             databaseConfig.set(task);
+        }
+        try {
+            databaseConfig.save();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
