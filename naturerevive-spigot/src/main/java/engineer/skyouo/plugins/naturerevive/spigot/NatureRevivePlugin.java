@@ -7,6 +7,7 @@ package engineer.skyouo.plugins.naturerevive.spigot;
 import engineer.skyouo.plugins.naturerevive.common.INMSWrapper;
 import engineer.skyouo.plugins.naturerevive.common.structs.PositionInfo;
 import engineer.skyouo.plugins.naturerevive.common.structs.Queue;
+import engineer.skyouo.plugins.naturerevive.spigot.catDebug.MySQL;
 import engineer.skyouo.plugins.naturerevive.spigot.commands.*;
 import engineer.skyouo.plugins.naturerevive.spigot.config.DatabaseConfig;
 import engineer.skyouo.plugins.naturerevive.spigot.config.ReadonlyConfig;
@@ -97,6 +98,8 @@ public class NatureRevivePlugin extends JavaPlugin {
 
             return;
         }
+        MySQL.connect();
+        MySQL.CrateTableData();
 
         getCommand("snapshot").setExecutor(new SnapshotCommand(this));
         getCommand("revert").setExecutor(new RevertCommand(this));
@@ -377,6 +380,7 @@ public class NatureRevivePlugin extends JavaPlugin {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        MySQL.disconnect();
     }
 
     private boolean isSuitableForChunkRegeneration() {

@@ -15,6 +15,7 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.RegenOptions;
 import engineer.skyouo.plugins.naturerevive.common.IPosCalculate;
 import engineer.skyouo.plugins.naturerevive.spigot.NatureRevivePlugin;
+import engineer.skyouo.plugins.naturerevive.spigot.catDebug.MySQL;
 import engineer.skyouo.plugins.naturerevive.spigot.constants.OreBlocksCompat;
 import engineer.skyouo.plugins.naturerevive.spigot.listeners.ObfuscateLootListener;
 import engineer.skyouo.plugins.naturerevive.spigot.structs.BlockDataChangeWithPos;
@@ -40,6 +41,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.Date;
 
 import static engineer.skyouo.plugins.naturerevive.spigot.NatureRevivePlugin.*;
 
@@ -137,6 +139,7 @@ public class ChunkRegeneration {
                 regenerateFA(chunk,true);
                 if (is_end_ship(chunk)){
                     Bukkit.getLogger().info("[NatureRevive] 該區塊為中界船頭，已新增鞘翅至該區塊 " + chunk.getBlock(0,0,0).getLocation());
+                    MySQL.create_player_data("已於終界世界 X: " + chunk.getX()*16 + " Z: " + chunk.getZ()*16 + "重生船頭+鞘翅",new Date());
                 }
                 //async重生完畢 接回Main third
                 new BukkitRunnable() {
