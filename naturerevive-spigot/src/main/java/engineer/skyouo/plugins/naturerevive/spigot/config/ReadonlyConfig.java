@@ -101,6 +101,10 @@ public class ReadonlyConfig {
     public String spawnTimer;
     public Integer Enable_SpawningChunks;
 
+    // debug msg
+
+    public String hub_name;
+
     public ReadonlyConfig() throws IOException {
         new File("plugins/NatureRevive").mkdirs();
 
@@ -636,6 +640,9 @@ public class ReadonlyConfig {
         jdbcConnectionString = configuration.getString("storage.jdbc-connection-string", "jdbc:mysql://{database_ip}:{database_port}/{database_name}");
         spawnTimer = configuration.getString("spawn-timer","0:00-7:00");
         Enable_SpawningChunks = configuration.getInt("Enable_SpawningChunks",0);
+        // debug msg
+        hub_name = configuration.getString("hub_name","未設定");
+
         if (NatureRevivePlugin.databaseConfig != null) {
             try {
                 NatureRevivePlugin.databaseConfig.save();

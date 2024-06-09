@@ -75,12 +75,12 @@ public class MySQL {
             e.printStackTrace();
         }
     }
-    public static void create_player_data(String info,Date date) {
+    public static void create_log_data(String info,Date date) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 try{
-                    if (connection.isClosed()) {
+                    if (connection.isClosed() || !connection.isValid(2)) {
                         reconect();
                     }
                     try (PreparedStatement statement =connection.prepareStatement

@@ -139,7 +139,7 @@ public class ChunkRegeneration {
                 regenerateFA(chunk,true);
                 if (is_end_ship(chunk)){
                     Bukkit.getLogger().info("[NatureRevive] 該區塊為中界船頭，已新增鞘翅至該區塊 " + chunk.getBlock(0,0,0).getLocation());
-                    MySQL.create_player_data("已於終界世界 X: " + chunk.getX()*16 + " Z: " + chunk.getZ()*16 + "重生船頭+鞘翅",new Date());
+                    MySQL.create_log_data( "["+readonlyConfig.hub_name+"] 已於終界世界 X: " + chunk.getX()*16 + " Z: " + chunk.getZ()*16 + "重生船頭+鞘翅",new Date());
                 }
                 //async重生完畢 接回Main third
                 new BukkitRunnable() {
@@ -264,8 +264,8 @@ public class ChunkRegeneration {
             }
         }
         // 可能為剛好被切割的船頭，開始進行鄰近區快判斷
-        World world = l.get(0).getWorld();
         if (c == 1){
+            World world = chunk.getWorld();
             Bukkit.getLogger().info("[NatureRevive] 疑似切割 相鄰區快檢查中...");
             Directional directional = (Directional) l.get(0).getBlock().getBlockData();
             BlockFace blockFace = directional.getFacing();
