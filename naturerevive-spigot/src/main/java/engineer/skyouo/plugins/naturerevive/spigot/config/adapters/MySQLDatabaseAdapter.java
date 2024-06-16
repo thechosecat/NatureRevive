@@ -70,6 +70,7 @@ public class MySQLDatabaseAdapter implements DatabaseConfig, SQLDatabaseAdapter 
             e.printStackTrace();
         }
     }
+    public void set_ignore(BukkitPositionInfo positionInfo){return;}
 
     public void unset(BukkitPositionInfo positionInfo) {
         // todo: let scheduler hold to prevent saving causing massively lag spike

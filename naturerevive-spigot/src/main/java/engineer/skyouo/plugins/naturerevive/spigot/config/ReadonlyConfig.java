@@ -104,6 +104,8 @@ public class ReadonlyConfig {
     // debug msg
 
     public String hub_name;
+    public int ely_amount;
+    public int end_random_day_offset;
 
     public ReadonlyConfig() throws IOException {
         new File("plugins/NatureRevive").mkdirs();
@@ -642,7 +644,8 @@ public class ReadonlyConfig {
         Enable_SpawningChunks = configuration.getInt("Enable_SpawningChunks",0);
         // debug msg
         hub_name = configuration.getString("hub_name","未設定");
-
+        ely_amount = configuration.getInt("ely_amount",1);
+        end_random_day_offset = configuration.getInt("end_random_day_offset",7);
         if (NatureRevivePlugin.databaseConfig != null) {
             try {
                 NatureRevivePlugin.databaseConfig.save();
@@ -655,7 +658,7 @@ public class ReadonlyConfig {
         }
     }
 
-    private long parseDuration(String duration) {
+    public long parseDuration(String duration) {
         String target =
                 Pattern.compile("\\d+d\\s").matcher(duration).find() ?
                         ("P" + duration.substring(0, duration.indexOf(" ")) + "T" + duration.substring(duration.indexOf(" "))) :
@@ -664,7 +667,6 @@ public class ReadonlyConfig {
                                 ("PT" + duration);
 
         target = target.replace(" ", "").toUpperCase(Locale.ROOT);
-
         return Duration.parse(target).toMillis();
     }
 

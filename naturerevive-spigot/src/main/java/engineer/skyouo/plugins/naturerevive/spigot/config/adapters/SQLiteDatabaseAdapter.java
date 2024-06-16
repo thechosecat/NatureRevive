@@ -57,6 +57,7 @@ public class SQLiteDatabaseAdapter implements DatabaseConfig, SQLDatabaseAdapter
 
         cache.put(positionInfo.getLocation(), positionInfo);
     }
+    public void set_ignore(BukkitPositionInfo positionInfo){return;}
 
     public void unset(BukkitPositionInfo positionInfo) {
         NatureRevivePlugin.sqlCommandQueue.add(new SQLCommand(positionInfo, SQLCommand.Type.DELETE));

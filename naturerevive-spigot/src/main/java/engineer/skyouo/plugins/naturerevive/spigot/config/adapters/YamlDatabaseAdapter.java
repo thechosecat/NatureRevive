@@ -1,20 +1,20 @@
 package engineer.skyouo.plugins.naturerevive.spigot.config.adapters;
 
+import engineer.skyouo.plugins.naturerevive.spigot.NatureRevivePlugin;
+import engineer.skyouo.plugins.naturerevive.spigot.config.ReadonlyConfig;
 import org.bukkit.Location;
 
 import java.io.IOException;
-import java.util.Base64;
+import java.util.*;
 
 import engineer.skyouo.plugins.naturerevive.spigot.config.DatabaseConfig;
 import engineer.skyouo.plugins.naturerevive.spigot.structs.BukkitPositionInfo;
+import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
-import java.util.Set;
 
 public class YamlDatabaseAdapter implements DatabaseConfig {
     private final File file = new File("plugins/NatureRevive/database.yml");
@@ -27,6 +27,17 @@ public class YamlDatabaseAdapter implements DatabaseConfig {
     }
 
     public void set(BukkitPositionInfo positionInfo) {
+        if (positionInfo.getLocation().getWorld().getEnvironment() == World.Environment.THE_END){
+            long ttl = positionInfo.getTTL();
+            Random random = new Random();
+            int value = random.nextInt(NatureRevivePlugin.readonlyConfig.end_random_day_offset + 1) + 1;
+            BukkitPositionInfo positionInfo2 = new BukkitPositionInfo(positionInfo.getLocation(), ttl+value* 86400000L);
+            configuration.set(formatLocation(positionInfo2.getLocation()), positionInfo2);
+            return;
+        }
+        configuration.set(formatLocation(positionInfo.getLocation()), positionInfo);
+    }
+    public void set_ignore(BukkitPositionInfo positionInfo) {
         configuration.set(formatLocation(positionInfo.getLocation()), positionInfo);
     }
 

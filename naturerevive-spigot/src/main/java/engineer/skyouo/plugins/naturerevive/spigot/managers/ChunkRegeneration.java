@@ -7,6 +7,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.WorldEdit;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.function.mask.Mask;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -16,6 +17,8 @@ import com.sk89q.worldedit.world.RegenOptions;
 import engineer.skyouo.plugins.naturerevive.common.IPosCalculate;
 import engineer.skyouo.plugins.naturerevive.spigot.NatureRevivePlugin;
 import engineer.skyouo.plugins.naturerevive.spigot.catDebug.MySQL;
+import engineer.skyouo.plugins.naturerevive.spigot.config.DatabaseConfig;
+import engineer.skyouo.plugins.naturerevive.spigot.config.adapters.YamlDatabaseAdapter;
 import engineer.skyouo.plugins.naturerevive.spigot.constants.OreBlocksCompat;
 import engineer.skyouo.plugins.naturerevive.spigot.listeners.ObfuscateLootListener;
 import engineer.skyouo.plugins.naturerevive.spigot.structs.BlockDataChangeWithPos;
@@ -49,13 +52,14 @@ public class ChunkRegeneration {
     private static final UUID emptyUUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
     public static void regenerateFA(Chunk chunk, boolean regenBiomes) {
         long o = System.currentTimeMillis();
-        BukkitWorld bukkitWorld = new BukkitWorld(chunk.getWorld());
-        EditSession session = WorldEdit.getInstance().newEditSession(bukkitWorld);
+        com.sk89q.worldedit.world.World world2 = BukkitAdapter.adapt(chunk.getWorld());
+        EditSession session = WorldEdit.getInstance().newEditSession(world2);
         Mask mask = session.getMask();
-
         BlockVector3 one = BlockVector3.at(chunk.getX()*16,-64,chunk.getZ()*16);
         BlockVector3 tow = BlockVector3.at(chunk.getX()*16+15,256,chunk.getZ()*16+15);
-        Region region = new CuboidRegion(bukkitWorld,one,tow);
+        Region region = new CuboidRegion(world2,one,tow);
+
+
 
         boolean success;
         try {
@@ -67,7 +71,7 @@ public class ChunkRegeneration {
                     .seed(chunk.getWorld().getSeed())
                     .regenBiomes(regenBiomes)
                     .build();
-            success = bukkitWorld.regenerate(region, session, options);
+            success = world2.regenerate(region,session,options);
         } finally {
             session.setMask(mask);
             //FAWE start
@@ -75,7 +79,7 @@ public class ChunkRegeneration {
             //FAWE end
         }
         if (success) {
-            bukkitWorld.refreshChunk(chunk.getX(),chunk.getZ());
+            world2.refreshChunk(chunk.getX(),chunk.getZ());
             Bukkit.getLogger().info("[NatureRevive] 區快再生成功(FAWE-API)花費" + (System.currentTimeMillis()-o) +"ms " + chunk);
         } else {
             Bukkit.getLogger().warning("[NatureRevive] 區快再生失敗 (FAWE-API) " + chunk);
@@ -308,7 +312,14 @@ public class ChunkRegeneration {
                     if (!Chest_loc_check(l.get(0),chests.get(0))){
                         continue;
                     }
+                    if (ely_amount >= readonlyConfig.ely_amount){
+                        Bukkit.getLogger().info("[NatureRevive] 今天已重生" + ely_amount + "個鞘翅，將不再重生新鞘翅");
+                        BukkitPositionInfo positionInfo = new BukkitPositionInfo(chunk1.getBlock(0,0,0).getLocation(), System.currentTimeMillis() + NatureRevivePlugin.readonlyConfig.parseDuration("1d"));
+                        NatureRevivePlugin.databaseConfig.set_ignore(positionInfo);
+                        return false;
+                    }
                     Place_ship_ely(l.get(0),chests.get(0),blockFace);
+                    ely_amount++;
                     return true;
                 }
             }
@@ -322,10 +333,20 @@ public class ChunkRegeneration {
             return false;
         }
         // 放置鞘翅 (sync)
+        if (ely_amount >= readonlyConfig.ely_amount){
+            Bukkit.getLogger().info("[NatureRevive] 今天已重生" + ely_amount + "個鞘翅，將不再重生新鞘翅");
+            BukkitPositionInfo positionInfo = new BukkitPositionInfo(chunk.getBlock(0,0,0).getLocation(), System.currentTimeMillis() + NatureRevivePlugin.readonlyConfig.parseDuration("1d"));
+            NatureRevivePlugin.databaseConfig.set_ignore(positionInfo);
+            return false;
+        }
         Directional directional = (Directional) l.get(0).getBlock().getBlockData();
         Place_ship_ely(l.get(0),l.get(1),directional.getFacing());
+        ely_amount++;
         return true;
     }
+    private static int ely_amount = 0;
+
+
     private static void Place_ship_ely(Location chest1,Location chest2,BlockFace eylyFace){
         Location location = get_new_flame_loc(chest1,chest2).add(0,1,0);
         new BukkitRunnable() {

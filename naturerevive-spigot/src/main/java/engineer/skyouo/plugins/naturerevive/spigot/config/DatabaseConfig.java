@@ -11,6 +11,7 @@ public interface DatabaseConfig {
     void set(BukkitPositionInfo positionInfo);
 
     void unset(BukkitPositionInfo positionInfo);
+    void set_ignore(BukkitPositionInfo positionInfo);
 
     BukkitPositionInfo get(Location location);
 
