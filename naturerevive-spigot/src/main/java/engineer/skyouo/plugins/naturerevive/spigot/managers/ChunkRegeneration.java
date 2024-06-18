@@ -10,6 +10,7 @@ import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.function.mask.Mask;
+import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
@@ -58,9 +59,6 @@ public class ChunkRegeneration {
         BlockVector3 one = BlockVector3.at(chunk.getX()*16,-64,chunk.getZ()*16);
         BlockVector3 tow = BlockVector3.at(chunk.getX()*16+15,256,chunk.getZ()*16+15);
         Region region = new CuboidRegion(world2,one,tow);
-
-
-
         boolean success;
         try {
             session.setMask(null);
@@ -72,6 +70,7 @@ public class ChunkRegeneration {
                     .regenBiomes(regenBiomes)
                     .build();
             success = world2.regenerate(region,session,options);
+            Operations.complete(session.commit());
         } finally {
             session.setMask(mask);
             //FAWE start
@@ -79,12 +78,12 @@ public class ChunkRegeneration {
             //FAWE end
         }
         if (success) {
-            world2.refreshChunk(chunk.getX(),chunk.getZ());
             Bukkit.getLogger().info("[NatureRevive] 區快再生成功(FAWE-API)花費" + (System.currentTimeMillis()-o) +"ms " + chunk);
         } else {
             Bukkit.getLogger().warning("[NatureRevive] 區快再生失敗 (FAWE-API) " + chunk);
         }
         session.close();
+        Bukkit.getLogger().info("[NatureRevive] session已關閉");
     }
     public static void regenerateChunk_FAWE(BukkitPositionInfo bukkitPositionInfo) {
         Location location = bukkitPositionInfo.getLocation();
